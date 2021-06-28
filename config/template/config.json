@@ -1,0 +1,21 @@
+{
+    "name": "tempalte",
+    "list": [
+        {
+            "name": "vue",
+            "fileName": "index.vue"
+        },
+        {
+            "name": "view",
+            "fileName": "view"
+        },
+        {
+            "name": "route",
+            "fileName": "view-route.js"
+        },
+        {
+            "name": "component",
+            "fileName": "component.vue"
+        }
+    ]
+}

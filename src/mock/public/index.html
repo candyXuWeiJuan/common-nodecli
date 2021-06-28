@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.12/vue.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.14.0/index.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+	<link href="https://cdn.bootcdn.net/ajax/libs/jsoneditor/9.1.5/jsoneditor.min.css" rel="stylesheet">
+	<script src="https://cdn.bootcdn.net/ajax/libs/jsoneditor/9.1.5/jsoneditor.min.js"></script>
+    <link href="./css/index.css" rel="stylesheet">
+    <title></title>
+</head>
+
+<body>
+    <noscript>
+        <strong></strong>
+    </noscript>
+    <div id="app">
+        <el-container class="content">
+            <el-header>ES MOCK SERVER</el-header>
+            <el-container style=" overflow: hidden;">
+                <el-aside width="200px">
+                    <el-button class="api-add-button" @click="onOpenCreate" type="primary">新增接口</el-button>
+                    <div class="api-item" :class="{'api-item-current': item.url === current.url && item.method === current.method}" v-for="item in list"
+                        :key="item.name" shadow="hover" @click="onClickItem(item)">
+                        <div>{{item.name}}</div>
+                        <el-button size="mini" type='text' @click="onRemove(item)">删除</el-button>
+                    </div>
+                </el-aside>
+                <el-container class="right-content">
+                    <el-main>
+                        <el-form v-show="current" ref="form" :model="form" label-width="120px" :rules="_rules">
+                            <el-form-item>
+                                <el-button @click="onUpdate" type="primary">修改接口</el-button>
+                                <el-button @click="onTest" type="success">测试接口</el-button>
+                            </el-form-item>
+                            <el-form-item prop="name" label="接口名称">
+                                <el-input v-model="form.name" />
+                            </el-form-item>
+                            <el-form-item prop="url" label="URL">
+                                <el-input v-model="form.url"  disabled/>
+                            </el-form-item>
+                            <el-form-item prop="method" label="Method">
+                                <el-select v-model="form.method" placeholder="请选择" disabled>
+                                    <el-option v-for="item in _options" :key="item" :label="item" :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item prop="data" label="Data">
+								<div id="jsoneditormod" style="height:500px"></div>
+                            </el-form-item>
+                        </el-from>
+                    </el-main>
+                    <el-footer></el-footer>
+                </el-container>
+            </el-container>
+        </el-container>
+        <el-dialog title="新建Mock接口" :visible.sync="show" width="60%" center>
+            <el-form ref="newOne" :model="newOne" label-width="120px" :rules="_rules">
+                <el-form-item prop="name" label="接口名称">
+                    <el-input v-model="newOne.name" />
+                </el-form-item>
+                <el-form-item prop="url" label="URL">
+                    <el-input v-model="newOne.url" />
+                </el-form-item>
+                <el-form-item prop="method" label="Method">
+                    <el-select v-model="newOne.method" placeholder="请选择">
+                        <el-option v-for="item in _options" :key="item" :label="item" :value="item">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item prop="data" label="Data">
+					<div id="jsoneditoradd" style="height:500px"></div>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="show = false">取 消</el-button>
+                    <el-button type="primary" @click="onNew">确 定</el-button>
+                </el-form-item>
+            </el-from>
+        </el-dialog>
+    </div>
+    <script type="module">
+        const { Message } = window.ELEMENT
+        axios.interceptors.response.use(
+            response => {
+                // if (response.data.code === 200) {
+                //     return response
+                // } else {
+                //     Message.error(response.data.message)
+                //     return Promise.reject(response.data)
+				// }
+				return response
+            },
+            error => {
+                return Promise.reject(error.response.status) // 返回接口返回的错误信息
+            })
+        const vm = new Vue({
+            el: '#app',
+            data() {
+                return {
+					editoradd: null,
+					editormod: null,
+                    show: false,
+                    newOne: {
+                        name: '',
+                        url: '',
+                        method: 'post',
+                        data: ''
+                    },
+                    form: {
+                        name: '',
+                        url: '',
+                        method: 'post',
+                        data: ''
+                    },
+                    current: '',
+                    list: []
+                }
+            },
+            beforeCreate() {
+                this._options = ['post', 'get', 'put', 'delete']
+                this._rules = {
+                    name: [
+                        { required: true, message: '请输入接口名称', trigger: 'blur' },
+                    ],
+                    url: [
+                        { required: true, message: '请输入接口URL', trigger: 'blur' },
+                    ],
+                    data: [
+                        { required: true, message: '请输入接口返回数据', trigger: 'blur' },
+                    ],
+                }
+            },
+            mounted() {
+                this.loadList()
+            },
+            methods: {
+				createEditor(id, type, Json ={}){
+					if(this[type]) return
+					const container = document.getElementById(id)
+					const options = {
+						mode: 'code',
+						indentation: 2,
+					}
+					const editor = new JSONEditor(container, options)
+					editor.set(Json)
+					this[type] = editor
+				},
+                onOpenCreate() {
+                    this.show = true
+					this.$nextTick(() => this.createEditor('jsoneditoradd', 'editoradd'))
+                },
+                loadList() {
+                    axios.post('/api/v1/mock-server/list')
+                        .then(({ data }) => {
+                            this.list = data.result.files
+                        })
+                },
+                onNew() {
+					try {
+						const jsonData = this.editoradd && this.editoradd.get()
+						this.newOne.data = jsonData
+					} catch (error) {
+						this.newOne.data = null
+					}
+					
+                    this.$refs['newOne'].validate((valid) => {
+                        if (valid && this.newOne.url[0] === '/') {
+                            axios.post('/api/v1/mock-server/add', this.newOne)
+                                .then(res => {
+									if(res.data.code === 200){
+										this.$message({
+											type:'success',
+											message:'添加成功'
+										})
+										this.loadList()
+										this.show = false
+									}else{
+										this.$message({
+											type:'error',
+											message:res.data.message
+										})
+									}
+                                   
+                                })
+                        } else {
+                            this.$message({
+								type:'error',
+								message:'提交失败，请检查参数，注意url必须以 / 开头哦'
+							})
+                            return false;
+                        }
+                    });
+                },
+                onUpdate() {
+					try {
+						this.form.data = this.editormod.get()
+					} catch (error) {
+						this.form.data = null
+					}
+                    this.$refs['form'].validate((valid) => {
+                        if (valid && this.form.url[0] === '/') {
+                            axios.post('/api/v1/mock-server/update', this.form)
+                                .then(res => {
+									if(res.data.code === 200){
+										this.$message({
+											type:'success',
+											message:'更新成功'
+										})
+										this.loadList()
+									}else{
+										this.$message({
+											type:'error',
+											message:res.data.message
+										})
+									}
+                                })
+                        } else {
+							this.$message({
+								type:'error',
+								message:'提交失败，请检查参数，注意url必须以 / 开头哦'
+							})
+                            return false;
+                        }
+                    })
+                },
+                onRemove(item) {
+                    axios.post('/api/v1/mock-server/delete', item)
+                        .then(res => {
+							this.$message({
+								type:'success',
+								message:'删除成功'
+							})
+                            this.loadList()
+                            if(this.current.name === item.name) {
+                                this.current = ''
+                            }
+                        })
+                },
+                onTest() {
+                    if (!this.current) {
+                        this.$message('请选择一个接口')
+                        return
+                    }
+                    const { method, url } = this.current
+                    axios({
+                        method,
+                        url: 'http://localhost:5555' + url
+                    })
+                        .then(res => {
+							console.log(res);
+							this.$message({
+								type:'success',
+								message:'测试成功, 请查看log'
+							})
+                        })
+                        .catch(() => {
+							this.$message({
+								type:'error',
+								message:'测试失败'
+							})
+                        })
+                },
+                onClickItem(item) {
+                    this.current = item
+                    this.form.name = item.name
+                    this.form.url = item.url
+                    this.form.method = item.method
+					this.form.data = item.data
+					if(this.editormod){
+						this.editormod.set(this.form.data)
+					}else{
+						this.$nextTick(() => this.createEditor('jsoneditormod', 'editormod', this.form.data ))
+					}
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
