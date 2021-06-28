@@ -1,35 +1,36 @@
 {
-  "name": "common-nodecli",
-  "version": "1.0.0",
-  "description": "前端公共脚手架",
-  "bin": {
-    "cm-cli": "bin/index.js"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "node ./bin/init",
-    "publish.major": "node ./script/publish.js major",
-    "publish.minor": "node ./script/publish.js minor",
-    "publish.patch": "node ./script/publish.js patch"
-  },
-  "author": "xuweijuan",
-  "license": "ISC",
-  "dependencies": {
-    "commander": "^7.2.0",
-    "koa": "^2.13.1",
-    "koa-bodyparser": "^4.3.0",
-    "koa-http2-proxy": "0.0.4",
-    "koa-router": "^10.0.0",
-    "koa-static": "^5.0.0",
-    "koa2-cors": "^2.0.6",
-    "ora": "^5.4.1"
-  },
-  "devDependencies": {
-    "chalk": "^4.1.1",
-    "change-case": "^4.1.2",
-    "fs": "0.0.1-security",
-    "fs-extra": "^10.0.0",
-    "inquirer": "^8.1.0",
-    "os": "^0.1.1"
-  }
+	"name": "common-nodecli",
+	"version": "1.0.0",
+	"description": "前端公共脚手架",
+	"bin": {
+		"cm-cli": "bin/index.js"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "node ./bin/init",
+		"publish.major": "node ./publish/publish.js major",
+		"publish.minor": "node ./publish/publish.js minor",
+		"publish.patch": "node ./publish/publish.js patch"
+	},
+	"author": "xuweijuan",
+	"license": "ISC",
+	"dependencies": {
+		"commander": "^7.2.0",
+		"koa": "^2.13.1",
+		"koa-bodyparser": "^4.3.0",
+		"koa-http2-proxy": "0.0.4",
+		"koa-router": "^10.0.0",
+		"koa-static": "^5.0.0",
+		"koa2-cors": "^2.0.6",
+		"ora": "^5.4.1"
+	},
+	"devDependencies": {
+		"chalk": "^4.1.1",
+		"change-case": "^4.1.2",
+		"cross-spawn": "^7.0.3",
+		"fs": "0.0.1-security",
+		"fs-extra": "^10.0.0",
+		"inquirer": "^8.1.0",
+		"os": "^0.1.1"
+	}
 }
